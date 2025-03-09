@@ -220,7 +220,7 @@ if st.session_state.step == 4:
 
 # STEP 5: Display Report & Download Option
 if st.session_state.step == 5:
-    st.header("Draft Journal Report")
+    st.header("Journal Report")
     st.write(st.session_state.report)
     st.download_button(
         label="Download Report as Text",
