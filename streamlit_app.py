@@ -69,7 +69,7 @@ a comprehensive journal report of approximately 500 words that reflects on the s
 and field activities. Follow the structure below:
 
 1. Please describe the plan of action for today’s field visit. (Include the date and time, objectives,
-   goals, and the purpose of your visit.) If talking about previous follow up, parse the date information from the uploaded PDF documentation. attribute {visit_date} is strictly for the new report, for the current visit.
+   goals, and the purpose of your visit.) While talking about previous follow up, DO NOT MENTION ANY DATE IN THE JOURNAL.
 2. Please describe the activities carried out to complete the action plan. (Outline the work done during
    the field visit.)
 3. What did you observe today that you would like to implement in your next field visit?
