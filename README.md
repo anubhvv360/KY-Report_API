@@ -1,19 +1,11 @@
-# :earth_americas: GDP dashboard template
+# Karma Yoga Journal Report Generator
 
-A simple Streamlit app showing the GDP of different countries in the world.
+This repository contains a Streamlit app that integrates with LangChain and a Gemini LLM to generate a journal report reflecting on social welfare projects. Users can upload photos and videos, select their Karma Yoga project, input their activities, and questions from a verifying authority. The app then generates an approximately 500-word journal report and offers a download option.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://gdp-dashboard-template.streamlit.app/)
+## Features
 
-### How to run it on your own machine
-
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+- **Media Upload:** Upload multiple photos and videos.
+- **Project Selection:** Choose from a dropdown list of Karma Yoga projects.
+- **User Inputs:** Provide details of activities and verifying questions.
+- **LLM Integration:** Generate a comprehensive journal report using Gemini LLM via LangChain.
+- **Downloadable Report:** Download the generated report as a text file.
