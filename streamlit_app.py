@@ -106,7 +106,7 @@ def main():
                 st.video(uploaded_file)
 
     # 2. Dropdown menu for selecting Karma Yoga project
-    project = st.selectbox("Select your Karma Yoga Project", ["project 1", "project 2"])
+    project = st.selectbox("Select your Karma Yoga Project", ["Tree Plantation Drive", "Anti-Drug & Addiction Awareness Program", "Beach Cleaning Drive", "Mobile Vetrin Camp", "Health Camp", "Road Safety Awareness Campaign", "Gardening Workshop", "Waste Management Awareness", "Financial Literacy"])
 
     # 3. Date input for the field visit
     visit_date = st.date_input("Enter the date of the field visit")
