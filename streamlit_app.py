@@ -86,7 +86,7 @@ def load_summarizer_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0.7,
-        max_tokens=500
+        max_tokens=5000
     )
 
 main_llm = load_main_llm()
