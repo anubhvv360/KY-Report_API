@@ -85,8 +85,8 @@ def load_summarizer_llm():
     """Load a ChatGoogleGenerativeAI model for summarizing previous PDF reports."""
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
-        temperature=0.7,
-        max_tokens=5000
+        temperature=0.2,
+        max_tokens=4000
     )
 
 main_llm = load_main_llm()
