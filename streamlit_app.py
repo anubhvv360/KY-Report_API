@@ -77,7 +77,7 @@ def load_main_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-pro-latest",  # Adjust as needed
         temperature=0.7,
-        max_tokens=5000
+        max_tokens=3000
     )
 
 @st.cache_resource
