@@ -41,7 +41,7 @@ def summarize_pdf_text(pdf_text: str) -> str:
     return summary.strip()
 
 ###############################################################################
-# Step 1: Define the new prompt template for a Social Impact based journal report
+# Step 1: Define the prompt template for a Social Impact based journal report
 
 prompt_text = """
 You are a world-class social welfare expert with years of experience evaluating field visits. Based on the context provided below, please draft a detailed journal report (500 to 700 words) that convincingly reflects the social impact of the current field visit. The report must be specific and persuasive to a seasoned evaluator.
@@ -108,114 +108,136 @@ def generate_journal_report(previous_report_summary: str, project: str, visit_nu
     })
 
 ###############################################################################
-# Step 3: Multi‑page form using st.session_state
+# Step 3: Multi‑step logic using st.session_state
 
 # Initialize current step if not present
 if "step" not in st.session_state:
     st.session_state.step = 1
 
-# Step 1: API Key input
+###############################################################################
+# Step 1: API Key
 if st.session_state.step == 1:
     with st.form("api_key_form"):
         st.header("Step 1: Enter Your Google API Key")
-        st.info("To use this app, you need a Google API Key for Generative AI. "
-                "Get one from the [Google Cloud Console - API Credentials](https://console.cloud.google.com/apis/credentials).")
+        st.info(
+            "To use this app, you need a Google API Key for Generative AI. "
+            "Get one from the [Google Cloud Console - API Credentials](https://console.cloud.google.com/apis/credentials)."
+        )
         api_key = st.text_input("Google API Key", type="password")
-        submitted = st.form_submit_button("Next")
-        if submitted:
-            if not api_key:
-                st.error("API Key is required to proceed.")
-            else:
-                st.session_state.api_key = api_key
-                genai.configure(api_key=api_key)
-                st.session_state.step = 2
-                st.experimental_rerun()
+        next_submitted = st.form_submit_button("Next")
 
+    if next_submitted:
+        if not api_key:
+            st.error("API Key is required to proceed.")
+            st.stop()  # Stop here; user must provide the key
+        else:
+            # Configure generative AI with the provided API key
+            genai.configure(api_key=api_key)
+            st.session_state.api_key = api_key
+            st.session_state.step = 2
+    st.stop()  # Stop after Step 1
+
+###############################################################################
 # Step 2: General Information
 if st.session_state.step == 2:
     with st.form("general_info_form"):
         st.header("Step 2: General Information")
         project = st.selectbox("Select your Karma Yoga Project", options=[
-            "Tree Plantation Drive", 
-            "Anti-Drug & Addiction Awareness Program", 
-            "Beach Cleaning Drive", 
-            "Mobile Veterinary Camp", 
-            "Health Camp", 
-            "Road Safety Awareness Campaign", 
-            "Gardening Workshop", 
-            "Waste Management Awareness", 
+            "Tree Plantation Drive",
+            "Anti-Drug & Addiction Awareness Program",
+            "Beach Cleaning Drive",
+            "Mobile Veterinary Camp",
+            "Health Camp",
+            "Road Safety Awareness Campaign",
+            "Gardening Workshop",
+            "Waste Management Awareness",
             "Financial Literacy"
         ])
         visit_number = st.selectbox("Which visit is it?", options=["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"])
-        submitted = st.form_submit_button("Next")
-        if submitted:
-            st.session_state.project = project
-            st.session_state.visit_number = visit_number
-            if visit_number == "1st":
-                st.session_state.previous_report_summary = ""  # No previous context
-                st.session_state.step = 4  # Skip previous visits info
-            else:
-                st.session_state.step = 3
-            st.experimental_rerun()
+        next_submitted = st.form_submit_button("Next")
 
-# Step 3: Previous Visit Information (if applicable)
+    if next_submitted:
+        st.session_state.project = project
+        st.session_state.visit_number = visit_number
+        # If it's the 1st visit, skip the previous report step
+        if visit_number == "1st":
+            st.session_state.previous_report_summary = ""
+            st.session_state.step = 4
+        else:
+            st.session_state.step = 3
+    st.stop()  # Stop after Step 2
+
+###############################################################################
+# Step 3: Previous Visit Information
 if st.session_state.step == 3:
     with st.form("previous_visit_form"):
         st.header("Step 3: Previous Visit Information")
         st.info("Upload a PDF report of your previous visit(s) to provide context. (PDF only)")
         previous_pdf = st.file_uploader("Upload Previous Visit Report (PDF)", type=["pdf"])
-        submitted = st.form_submit_button("Next")
-        if submitted:
-            if previous_pdf is not None:
-                with st.spinner("Extracting and summarizing previous report..."):
-                    pdf_text = extract_text_from_pdf(previous_pdf)
-                    if pdf_text:
-                        summary = summarize_pdf_text(pdf_text)
-                        st.session_state.previous_report_summary = summary
-                    else:
-                        st.session_state.previous_report_summary = ""
-            else:
-                st.session_state.previous_report_summary = ""
-            st.session_state.step = 4
-            st.experimental_rerun()
+        next_submitted = st.form_submit_button("Next")
 
+    if next_submitted:
+        if previous_pdf is not None:
+            with st.spinner("Extracting and summarizing previous report..."):
+                pdf_text = extract_text_from_pdf(previous_pdf)
+                if pdf_text:
+                    summary = summarize_pdf_text(pdf_text)
+                    st.session_state.previous_report_summary = summary
+                else:
+                    st.session_state.previous_report_summary = ""
+        else:
+            st.session_state.previous_report_summary = ""
+        st.session_state.step = 4
+    st.stop()  # Stop after Step 3
+
+###############################################################################
 # Step 4: Current Visit Information
 if st.session_state.step == 4:
     with st.form("current_visit_form"):
         st.header("Step 4: Current Visit Information")
         st.info("Upload any images or videos that show what is being done during this visit (optional).")
-        media_files = st.file_uploader("Upload Images/Videos (optional)", type=["png", "jpg", "jpeg", "mp4", "mov", "avi"], accept_multiple_files=True)
+        media_files = st.file_uploader(
+            "Upload Images/Videos (optional)",
+            type=["png", "jpg", "jpeg", "mp4", "mov", "avi"],
+            accept_multiple_files=True
+        )
         current_visit_details = st.text_area(
             "Describe what you have done in the current visit:",
-            help="Provide clear and detailed information about the work you performed during this visit. Do not include sensitive information."
+            help="Provide clear and detailed information about the work you performed during this visit. "
+                 "Avoid sharing sensitive or unrelated content."
         )
         visit_date = st.date_input("Enter the visit date")
-        submitted = st.form_submit_button("Generate Journal Report")
-        if submitted:
-            st.session_state.media_files = media_files
-            st.session_state.current_visit_details = current_visit_details
-            st.session_state.visit_date = visit_date
-            # Create a media summary from the uploaded files
-            if media_files:
-                file_names = [f.name for f in media_files]
-                media_summary = f"Uploaded media files: {', '.join(file_names)}."
-            else:
-                media_summary = "No media files provided."
-            st.session_state.media_summary = media_summary
-            # Generate the final report
-            with st.spinner("Generating your journal report..."):
-                report = generate_journal_report(
-                    previous_report_summary=st.session_state.get("previous_report_summary", ""),
-                    project=st.session_state.project,
-                    visit_number=st.session_state.visit_number,
-                    current_visit_details=st.session_state.current_visit_details,
-                    media_summary=st.session_state.media_summary,
-                    visit_date=st.session_state.visit_date
-                )
-            st.session_state.report = report
-            st.session_state.step = 5
-            st.experimental_rerun()
+        generate_submitted = st.form_submit_button("Generate Journal Report")
 
+    if generate_submitted:
+        # Save user inputs
+        st.session_state.media_files = media_files
+        st.session_state.current_visit_details = current_visit_details
+        st.session_state.visit_date = visit_date
+
+        # Build a media summary from the uploaded files
+        if media_files:
+            file_names = [f.name for f in media_files]
+            media_summary = f"Uploaded media files: {', '.join(file_names)}."
+        else:
+            media_summary = "No media files provided."
+        st.session_state.media_summary = media_summary
+
+        # Generate the final report
+        with st.spinner("Generating your journal report..."):
+            report = generate_journal_report(
+                previous_report_summary=st.session_state.get("previous_report_summary", ""),
+                project=st.session_state.project,
+                visit_number=st.session_state.visit_number,
+                current_visit_details=st.session_state.current_visit_details,
+                media_summary=st.session_state.media_summary,
+                visit_date=st.session_state.visit_date
+            )
+        st.session_state.report = report
+        st.session_state.step = 5
+    st.stop()  # Stop after Step 4
+
+###############################################################################
 # Step 5: Display Report & Download Option
 if st.session_state.step == 5:
     st.header("Draft Journal Report")
@@ -226,3 +248,15 @@ if st.session_state.step == 5:
         file_name="journal_report.txt",
         mime="text/plain"
     )
+
+# Footer for Credits
+st.markdown("""---""")
+st.markdown(
+    """
+    <div style="background: linear-gradient(to right, blue, purple); padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; color: white;">
+        Made with ❤️ by Anubhav Verma<br>
+        Please reach out to anubhav.verma360@gmail.com if you encounter any issues.
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
