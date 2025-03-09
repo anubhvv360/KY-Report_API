@@ -20,18 +20,23 @@ from pdfminer.high_level import extract_text
 # Set page config first
 st.set_page_config(page_title="Karma Yoga Journal Agent", page_icon="📝", layout="wide")
 
-# Sidebar: library versions (optional)
-st.sidebar.markdown("### Library Versions")
-st.sidebar.markdown(f"google.generativeai: {genai.__version__}")
-st.sidebar.markdown(f"streamlit: {st.__version__}")
+# Sidebar: Google API Key instructions
+st.sidebar.markdown("### Google API Key Instructions")
+st.sidebar.info(
+    "To use this app, you need a Google API Key for Generative AI. "
+    "If you don't have one, please visit the [Google Cloud Console - API Credentials](https://console.cloud.google.com/apis/credentials) "
+    "and follow the instructions to create a new API key."
+)
 
-# Check for API key in Streamlit secrets
-if "GOOGLE_API_KEY" not in st.secrets:
-    st.error("API key not found in secrets. Please add GOOGLE_API_KEY to your Streamlit secrets.")
+# Input for the Google API Key
+api_key = st.text_input("Enter your Google API Key", type="password", 
+                          help="Your API key is required to connect to Google Generative AI. "
+                               "Get one at https://console.cloud.google.com/apis/credentials")
+if not api_key:
+    st.error("Google API Key is required to proceed. Please enter your API key above.")
     st.stop()
 
-# Configure Google Generative AI with your API key
-api_key = st.secrets["GOOGLE_API_KEY"]
+# Configure Google Generative AI with the provided API key
 genai.configure(api_key=api_key)
 
 # Cache the main Gemini model
@@ -177,15 +182,23 @@ def main():
             st.info("Previous report summarized. This summary will be used for context.")
 
     # 3. Dropdown menu for selecting Karma Yoga project
-    project = st.selectbox("Select your Karma Yoga Project", ["Tree Plantation Drive", "Anti-Drug & Addiction awareness program", "Beach Cleaning Drive", "Mobile Veterinary Camp", "Health Camp", "Road Safety Awareness Campaign", "Gardening Workshop", "Waste Management Awareness", "Financial Literacy"])
+    project = st.selectbox("Select your Karma Yoga Project", [
+        "Tree Plantation Drive", 
+        "Anti-Drug & Addiction awareness program", 
+        "Beach Cleaning Drive", 
+        "Mobile Veterinary Camp", 
+        "Health Camp", 
+        "Road Safety Awareness Campaign", 
+        "Gardening Workshop", 
+        "Waste Management Awareness", 
+        "Financial Literacy"
+    ])
 
     # 4. Date input for the field visit
     visit_date = st.date_input("Enter the date of the field visit")
 
     # 5. Free text for objectives, goals, and purpose of visit
-    visit_details = st.text_area(
-        "Enter the objectives, goals, and purpose of your visit:"
-    )
+    visit_details = st.text_area("Enter the objectives, goals, and purpose of your visit:")
 
     # 6. Pre-filled text area for the four skeleton questions (editable by the user)
     default_questions = """1. Please describe the plan of action for today’s field visit.
@@ -193,11 +206,7 @@ def main():
 3. What did you observe today that you would like to implement in your next field visit?
 4. What are the key learning outcomes from this field visit?
 """
-    questions = st.text_area(
-        "Edit or add details for the field visit questions:",
-        default_questions,
-        height=200
-    )
+    questions = st.text_area("Edit or add details for the field visit questions:", default_questions, height=200)
 
     # 7. Text area for user to describe what they have done so far
     actions = st.text_area("Describe what you have done so far:")
