@@ -117,7 +117,7 @@ if st.session_state.step == 1:
     with st.form("api_key_form"):
         st.header("Step 1: Enter Your Google API Key")
         st.info("To use this app, you need a Google API Key for Generative AI. "
-                "Get one from the [Google Cloud Console - API Credentials](https://console.cloud.google.com/apis/credentials).")
+                "Get one from the [Google AI Studio - Generate API Key](https://aistudio.google.com/apikey).")
         api_key = st.text_input("Google API Key", type="password")
         submitted = st.form_submit_button(label="Next")
         st.caption("Note: Please press 'Next' twice.")
