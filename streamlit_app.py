@@ -119,8 +119,8 @@ if st.session_state.step == 1:
         st.info("To use this app, you need a Google API Key for Generative AI. "
                 "Get one from the [Google Cloud Console - API Credentials](https://console.cloud.google.com/apis/credentials).")
         api_key = st.text_input("Google API Key", type="password")
-        submitted = st.form_submit_button(label="Next",help="Click twice")
-        st.caption("Note: If the page does not proceed, please press 'Next' twice.")
+        submitted = st.form_submit_button(label="Next")
+        st.caption("Note: Please press 'Next' twice.")
         if submitted:
             if not api_key:
                 st.error("API Key is required to proceed.")
@@ -146,7 +146,8 @@ if st.session_state.step == 2:
             "Financial Literacy"
         ])
         visit_number = st.selectbox("Which visit is it?", options=["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"])
-        submitted = st.form_submit_button(label="Next",help="Click twice")
+        submitted = st.form_submit_button(label="Next")
+        st.caption("Note: Please press 'Next' twice.")
         if submitted:
             st.session_state.project = project
             st.session_state.visit_number = visit_number
@@ -164,6 +165,7 @@ if st.session_state.step == 3:
         st.info("Upload a PDF report of your previous visit(s) to provide context. (PDF only)")
         previous_pdf = st.file_uploader("Upload Previous Visit Report (PDF)", type=["pdf"])
         submitted = st.form_submit_button("Next")
+        st.caption("Note: Please press 'Next' twice.")
         if submitted:
             if previous_pdf is not None:
                 with st.spinner("Extracting and summarizing previous report..."):
@@ -191,7 +193,8 @@ if st.session_state.step == 4:
             help="Provide clear and detailed information about the work you performed during this visit. Do not include sensitive information."
         )
         visit_date = st.date_input("Enter the visit date")
-        submitted = st.form_submit_button(label="Generate Journal Report",help="Click twice")
+        submitted = st.form_submit_button(label="Generate Journal Report")
+        st.caption("Note: Please press 'Generate Journal Report' again once the spinner disappears to view the report.")
         if submitted:
             st.session_state.media_files = media_files
             st.session_state.current_visit_details = current_visit_details
