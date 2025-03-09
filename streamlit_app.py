@@ -4,6 +4,7 @@
 import streamlit as st
 import os
 import io
+import time
 
 # Google Generative AI & LangChain imports
 import google.generativeai as genai
@@ -159,24 +160,38 @@ if st.session_state.step == 2:
             st.stop()
 
 # STEP 3: Previous Visit Information
+#import time # Add this at the top along with your other imports
+# STEP 3: Previous Visit Information
 if st.session_state.step == 3:
     with st.form("previous_visit_form"):
         st.header("Step 3: Previous Visit Information")
         st.info("Upload a PDF report of your previous visit(s) to provide context. (PDF only)")
         previous_pdf = st.file_uploader("Upload Previous Visit Report (PDF)", type=["pdf"])
+        st.caption("If the extraction takes more than 1 minute, please paste the text manually below.")
+        manual_text = st.text_area("Or paste the PDF text manually (optional)", height=200)
         submitted = st.form_submit_button("Next")
         st.caption("Note: Please press 'Next' again once the spinner disappears.")
         if submitted:
-            if previous_pdf is not None:
+            summary = ""
+            # If the user pasted text manually, use that.
+            if manual_text.strip():
+                with st.spinner("Summarizing manually entered text..."):
+                    summary = summarize_pdf_text(manual_text)
+            # Else if a PDF was uploaded, attempt extraction.
+            elif previous_pdf is not None:
                 with st.spinner("Extracting and summarizing previous report..."):
+                    start_time = time.time()
                     pdf_text = extract_text_from_pdf(previous_pdf)
+                    duration = time.time() - start_time
+                    if duration > 60:
+                        st.warning("PDF extraction took more than 1 minute. Consider using the manual text option.")
                     if pdf_text:
                         summary = summarize_pdf_text(pdf_text)
-                        st.session_state.previous_report_summary = summary
                     else:
-                        st.session_state.previous_report_summary = ""
+                        summary = ""
             else:
-                st.session_state.previous_report_summary = ""
+                summary = ""
+            st.session_state.previous_report_summary = summary
             st.session_state.step = 4
             st.stop()
 
