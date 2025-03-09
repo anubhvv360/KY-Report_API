@@ -31,7 +31,7 @@ def extract_text_from_pdf(pdf_file) -> str:
 def summarize_pdf_text(pdf_text: str) -> str:
     """
     Summarize the extracted PDF text using a summarization chain with the summarizer LLM.
-    This keeps the final prompt concise.
+    This keeps the final prompt concise. Fetch max 10 key facts.
     """
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = text_splitter.split_text(pdf_text)
