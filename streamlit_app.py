@@ -177,7 +177,7 @@ def main():
             st.info("Previous report summarized. This summary will be used for context.")
 
     # 3. Dropdown menu for selecting Karma Yoga project
-    project = st.selectbox("Select your Karma Yoga Project", ["project 1", "project 2"])
+    project = st.selectbox("Select your Karma Yoga Project", ["Tree Plantation Drive", "Anti-Drug & Addiction awareness program", "Beach Cleaning Drive", "Mobile Veterinary Camp", "Health Camp", "Road Safety Awareness Campaign", "Gardening Workshop", "Waste Management Awareness", "Financial Literacy"])
 
     # 4. Date input for the field visit
     visit_date = st.date_input("Enter the date of the field visit")
