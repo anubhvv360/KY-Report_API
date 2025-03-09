@@ -66,10 +66,10 @@ summarizer_llm = load_summarizer_llm()
 journal_prompt = """
 You are a social welfare expert. Based on the following details from today's field visit, please draft
 a comprehensive journal report of approximately 500 words that reflects on the social welfare impact
-and field activities. Follow the structure below:
+and field activities. Dont mention visiting Date in the paragraphs. Follow the structure below:
 
 1. Please describe the plan of action for today’s field visit. (Include the date and time, objectives,
-   goals, and the purpose of your visit.) While talking about previous follow up, DO NOT MENTION ANY DATE IN THE JOURNAL.
+   goals, and the purpose of your visit.)
 2. Please describe the activities carried out to complete the action plan. (Outline the work done during
    the field visit.)
 3. What did you observe today that you would like to implement in your next field visit?
