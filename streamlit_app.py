@@ -44,7 +44,7 @@ def summarize_pdf_text(pdf_text: str) -> str:
 # Prompt template for a Social Impact based journal report
 
 prompt_text = """
-You are a world-class social welfare expert with years of experience evaluating field visits. Based on the context provided below, please draft a detailed journal report (500 to 700 words) that convincingly reflects the social impact of the current field visit. The report must be specific and persuasive to a seasoned evaluator. Don't mention any date in the report.
+You are a world-class social welfare expert with years of experience evaluating field visits. Based on the context provided below, please draft a detailed journal report (500 to 700 words) that convincingly reflects the social impact of the current field visit. The report must be specific and persuasive to a seasoned evaluator. Don't mention any date in the report. Make the output in plural first person (using We/Us)
 
 Structure:
 1. Please describe the plan of action for today’s field visit. (Include the date and time, objectives, goals, and the purpose of your visit.)
