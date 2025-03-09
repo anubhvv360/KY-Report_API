@@ -28,53 +28,23 @@ def extract_text_from_pdf(pdf_file) -> str:
     pdf_bytes = pdf_file.read()
     return extract_text(io.BytesIO(pdf_bytes))
 
-def extract_key_facts(text: str) -> str:
-    """
-    Extract key facts from the provided text using a custom prompt.
-    This function uses a smaller prompt to output only the essential bullet points.
-    """
-    key_prompt = PromptTemplate(
-        input_variables=["text"],
-        template=(
-            "Extract the most important key facts and details from the following text in bullet point format. "
-            "Only include the critical points that capture objectives, outcomes, and impact.\n\nText:\n{text}"
-        )
-    )
-    chain = LLMChain(llm=summarizer_llm, prompt=key_prompt)
-    key_facts = chain.run({"text": text})
-    return key_facts.strip()
-
 def summarize_pdf_text(pdf_text: str) -> str:
     """
-    Summarize the extracted PDF text by first extracting key facts from small chunks,
-    then combining those facts into a final summary.
+    Summarize the extracted PDF text using a summarization chain with the summarizer LLM.
+    This keeps the final prompt concise.
     """
-    # Use a smaller chunk size to avoid token exhaustion
-    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = text_splitter.split_text(pdf_text)
-    
-    # Extract key facts from each chunk
-    all_key_facts = []
-    for chunk in chunks:
-        facts = extract_key_facts(chunk)
-        all_key_facts.append(facts)
-    
-    # Combine the extracted key facts into a single text block
-    combined_facts = "\n".join(all_key_facts)
-    
-    # Optionally, further summarize the combined key facts into a final summary
-    # Here we use the map_reduce summarization chain for a concise output.
-    docs = [Document(page_content=combined_facts)]
+    docs = [Document(page_content=chunk) for chunk in chunks]
     summarize_chain = load_summarize_chain(summarizer_llm, chain_type="map_reduce")
-    final_summary = summarize_chain.run(docs)
-    
-    return final_summary.strip()
+    summary = summarize_chain.run(docs)
+    return summary.strip()
 
 ###############################################################################
 # Prompt template for a Social Impact based journal report
 
 prompt_text = """
-You are a world-class social welfare expert with years of experience evaluating field visits. Based on the context provided below, please draft a detailed journal report (500 to 700 words) that convincingly reflects the social impact of the current field visit. The report must be specific and persuasive to a seasoned evaluator. Don't mention any date in the report. Make the output in plural first person (using We/Us).
+You are a world-class social welfare expert with years of experience evaluating field visits. Based on the context provided below, please draft a detailed journal report (500 to 700 words) that convincingly reflects the social impact of the current field visit. The report must be specific and persuasive to a seasoned evaluator. Don't mention any date in the report. Make the output in plural first person (using We/Us)
 
 Structure:
 1. Please describe the plan of action for today’s field visit. (Include the date and time, objectives, goals, and the purpose of your visit.)
@@ -107,7 +77,7 @@ def load_main_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-pro-latest",  # Adjust as needed
         temperature=0.7,
-        max_tokens=4000
+        max_tokens=5000
     )
 
 @st.cache_resource
@@ -116,7 +86,7 @@ def load_summarizer_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-pro-latest",
         temperature=0.7,
-        max_tokens=4000
+        max_tokens=5000
     )
 
 main_llm = load_main_llm()
@@ -263,7 +233,7 @@ if st.session_state.step == 5:
         mime="text/plain"
     )
 
-    # Footer: Displayed only on the final page
+    # Footer: Displayed only in the final step
     st.markdown("---")
     st.markdown(
         """
