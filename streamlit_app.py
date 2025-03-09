@@ -184,8 +184,7 @@ def main():
 
     # 5. Free text for objectives, goals, and purpose of visit
     visit_details = st.text_area(
-        "Enter the objectives, goals, and purpose of your visit:",
-        "Enter objectives, goals, and purpose of visit here..."
+        "Enter the objectives, goals, and purpose of your visit:"
     )
 
     # 6. Pre-filled text area for the four skeleton questions (editable by the user)
