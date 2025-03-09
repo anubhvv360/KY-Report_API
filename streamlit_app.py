@@ -33,7 +33,7 @@ def summarize_pdf_text(pdf_text: str) -> str:
     Summarize the extracted PDF text, fetch 10 key facts.
     This keeps the final prompt concise.
     """
-    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=20)
+    text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = text_splitter.split_text(pdf_text)
     docs = [Document(page_content=chunk) for chunk in chunks]
     summarize_chain = load_summarize_chain(summarizer_llm, chain_type="map_reduce")
