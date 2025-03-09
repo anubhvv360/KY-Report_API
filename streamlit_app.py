@@ -127,7 +127,7 @@ if st.session_state.step == 1:
                 st.session_state.api_key = api_key
                 genai.configure(api_key=api_key)
                 st.session_state.step = 2
-                st.stop()  # Stop the script, so the next run picks up step=2
+                st.stop()
 
 # STEP 2: General Information
 if st.session_state.step == 2:
@@ -229,14 +229,14 @@ if st.session_state.step == 5:
         mime="text/plain"
     )
 
-# Footer
-st.markdown("---")
-st.markdown(
-    """
-    <div style="background: linear-gradient(to right, blue, purple); padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; color: white;">
-        Made with ❤️ by Anubhav Verma<br>
-        Please reach out to anubhav.verma360@gmail.com if you encounter any issues.
-    </div>
-    """, 
-    unsafe_allow_html=True
-)
+    # Footer: Displayed only in the final step
+    st.markdown("---")
+    st.markdown(
+        """
+        <div style="background: linear-gradient(to right, blue, purple); padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; color: white;">
+            Made with ❤️ by Anubhav Verma<br>
+            Please reach out to anubhav.verma360@gmail.com if you encounter any issues.
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
