@@ -30,12 +30,11 @@ def extract_text_from_pdf(pdf_file) -> str:
     return extract_text(io.BytesIO(pdf_bytes))
 
 def summarize_pdf_text(pdf_text: str) -> str:
-    """
-    Summarize the extracted PDF text using a summarization chain with the summarizer LLM.
-    This keeps the final prompt concise.
-    """
     text_splitter = CharacterTextSplitter(chunk_size=3000, chunk_overlap=300)
     chunks = text_splitter.split_text(pdf_text)
+    st.write(f"Number of chunks: {len(chunks)}")
+    for i, chunk in enumerate(chunks):
+        st.write(f"Chunk {i+1} length: {len(chunk)}")
     docs = [Document(page_content=chunk) for chunk in chunks]
     summarize_chain = load_summarize_chain(summarizer_llm, chain_type="map_reduce")
     summary = summarize_chain.run(docs)
