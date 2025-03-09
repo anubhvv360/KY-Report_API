@@ -120,6 +120,7 @@ if st.session_state.step == 1:
                 "Get one from the [Google Cloud Console - API Credentials](https://console.cloud.google.com/apis/credentials).")
         api_key = st.text_input("Google API Key", type="password")
         submitted = st.form_submit_button(label="Next",help="Click twice")
+        st.caption("Note: If the page does not proceed, please press 'Next' twice.")
         if submitted:
             if not api_key:
                 st.error("API Key is required to proceed.")
