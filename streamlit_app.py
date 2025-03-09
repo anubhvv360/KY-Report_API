@@ -18,7 +18,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from pdfminer.high_level import extract_text
 
 # Set page config first
-st.set_page_config(page_title="Karma Yoga Journal", page_icon="📝", layout="wide")
+st.set_page_config(page_title="Karma Yoga Journal Agent", page_icon="📝", layout="wide")
 
 # Sidebar: library versions (optional)
 st.sidebar.markdown("### Library Versions")
@@ -69,7 +69,7 @@ a comprehensive journal report of approximately 500 words that reflects on the s
 and field activities. Follow the structure below:
 
 1. Please describe the plan of action for today’s field visit. (Include the date and time, objectives,
-   goals, and the purpose of your visit.)
+   goals, and the purpose of your visit.) If talking about previous follow up, parse the date information from the uploaded PDF documentation. attribute {visit_date} is strictly for the new report, for the current visit.
 2. Please describe the activities carried out to complete the action plan. (Outline the work done during
    the field visit.)
 3. What did you observe today that you would like to implement in your next field visit?
