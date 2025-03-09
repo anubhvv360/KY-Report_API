@@ -165,7 +165,7 @@ if st.session_state.step == 3:
         st.info("Upload a PDF report of your previous visit(s) to provide context. (PDF only)")
         previous_pdf = st.file_uploader("Upload Previous Visit Report (PDF)", type=["pdf"])
         submitted = st.form_submit_button("Next")
-        st.caption("Note: Please press 'Next' twice.")
+        st.caption("Note: Please press 'Next' again once the spinner disappears.")
         if submitted:
             if previous_pdf is not None:
                 with st.spinner("Extracting and summarizing previous report..."):
