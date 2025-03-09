@@ -47,8 +47,8 @@ prompt_text = """
 You are a world-class social welfare expert with years of experience evaluating field visits. Based on the context provided below, please draft a detailed journal report (500 to 700 words) that convincingly reflects the social impact of the current field visit. The report must be specific and persuasive to a seasoned evaluator. Don't mention any date in the report. Make the output in plural first person (using We/Us)
 
 Structure:
-1. Please describe the plan of action for today’s field visit. (Include the date and time, objectives, goals, and the purpose of your visit.)
-2. Please describe the activities carried out to complete the action plan. (Outline the work done during the field visit.)
+1. Describe the plan of action for today’s field visit. (Include objectives, goals, and the purpose of your visit.)
+2. Describe the activities carried out to complete the action plan. (Outline the work done during the field visit.)
 3. What did you observe today that you would like to implement in your next field visit?
 4. What are the key learning outcomes from this field visit? (Highlight the lessons learned from the experience.)
 
