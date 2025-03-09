@@ -30,7 +30,7 @@ def extract_text_from_pdf(pdf_file) -> str:
     return extract_text(io.BytesIO(pdf_bytes))
 
 def summarize_pdf_text(pdf_text: str) -> str:
-    text_splitter = CharacterTextSplitter(chunk_size=3000, chunk_overlap=300)
+    text_splitter = CharacterTextSplitter(chunk_size=4000, chunk_overlap=300)
     chunks = text_splitter.split_text(pdf_text)
     st.write(f"Number of chunks: {len(chunks)}")
     for i, chunk in enumerate(chunks):
@@ -86,7 +86,7 @@ def load_summarizer_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
         temperature=0.3,
-        max_tokens=3000,  # Reduced to avoid excess token consumption
+        max_tokens=2000,  # Reduced to avoid excess token consumption
         top_p=0.9
     )
 
