@@ -1,5 +1,7 @@
 # Karma Yoga Journal Report Generator
 
+Generate detailed Karma Yoga Reports Instantly!
+
 This repository contains a Streamlit app that integrates with LangChain and a Gemini LLM to generate a journal report reflecting on social welfare projects. Users can upload photos and videos, select their Karma Yoga project, input their activities, and questions from a verifying authority. The app then generates an approximately 500-word journal report and offers a download option.
 
 ## Features
