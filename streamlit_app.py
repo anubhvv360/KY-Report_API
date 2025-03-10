@@ -4,6 +4,7 @@
 import streamlit as st
 import os
 import io
+import time
 
 # Google Generative AI & LangChain imports
 import google.generativeai as genai
@@ -38,13 +39,10 @@ genai.configure(api_key=api_key)
 # Prompt template for a Social Impact based journal report
 
 journal_prompt = """
-You are a social welfare student with a low budget. Based on the following details from today's field visit, draft
-a comprehensive journal report of approximately 400 - 500 words that reflects on the social welfare impact
-and field activities, building on to what was done in previous report summary. The report must be specific and persuasive to a seasoned evaluator. Don't mention any date in the report. 
-Make the output in plural first person (using We/Us). Follow the structure below:
+You are a social welfare expert. Based on the following details from today's field visit, please draft a comprehensive journal report of approximately 500 words that reflects on the social welfare impact and field activities. Don't mention the visiting date in the paragraphs. Follow the structure below:
 
-1. Describe the plan of action for today’s field visit. (Include the objectives, goals, and the purpose of your visit.)
-2. Describe the activities carried out to complete the action plan. (Outline the work done during the field visit.)
+1. Please describe the plan of action for today’s field visit. (Include objectives, goals, and the purpose of your visit.)
+2. Please describe the activities carried out to complete the action plan. (Outline the work done during the field visit.)
 3. What did you observe today that you would like to implement in your next field visit?
 4. What are the key learning outcomes from this field visit? (Highlight the lessons learned from the experience.)
 
@@ -71,12 +69,9 @@ journal_chain = LLMChain(prompt=prompt_template, llm=ChatGoogleGenerativeAI(
 ))
 
 ###############################################################################
-# Summarization chain to handle previous PDF
-def summarize_pdf_text(pdf_text: str) -> str:
-    """
-    Summarize the extracted PDF text using a summarization chain with the summarizer LLM.
-    This helps keep the final prompt from exceeding token limits if the PDF is large.
-    """
+# Cached summarization to avoid repeated runs if the same text is provided
+@st.cache_data(show_spinner=False)
+def cached_summarize_pdf_text(pdf_text: str) -> str:
     text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = text_splitter.split_text(pdf_text)
     docs = [Document(page_content=chunk) for chunk in chunks]
@@ -119,9 +114,9 @@ def generate_journal_report(
 
 def main():
     st.title("Karma Yoga Journal Report Generator")
-    st.write("Upload a PDF of a previous report (optional) and provide inputs for your latest vist.")
+    st.write("Provide the details for your field visit. You may optionally upload a PDF of a previous report (for context) at the end.")
 
-    # 2. General Information: Select Karma Yoga Project and which visit it is (ignore 1st)
+    # General Information Section
     st.subheader("General Information")
     project = st.selectbox("Select your Karma Yoga Project", [
         "Tree Plantation Drive",
@@ -137,32 +132,28 @@ def main():
     visit_number = st.selectbox("Which visit is it?", [
         "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"
     ])
-
-    # 3. Date input for the field visit
     visit_date = st.date_input("Enter the date of the field visit")
+    actions = st.text_area("Describe what you have done so far:")
 
-    # 4. Text area for user to describe what they have done so far
-    actions = st.text_area("Describe what you have done in this visit:")
-
-    # 1. (Optional) PDF of a previous report
-    st.subheader("Previous Report (PDF)")
+    # Optional: Upload previous report PDF at the end
+    st.subheader("Optional: Previous Report (PDF)")
     previous_pdf = st.file_uploader("Upload a PDF of your previous report (optional)", type=["pdf"])
     previous_report_summary = ""
     if previous_pdf is not None:
         with st.spinner("Extracting text from the PDF..."):
             pdf_text = extract_text_from_pdf(previous_pdf)
         if pdf_text:
-            st.success(f"Successfully extracted {len(pdf_text)} characters from previous report.")
+            st.success(f"Successfully extracted {len(pdf_text)} characters from the previous report.")
             with st.spinner("Summarizing previous report..."):
-                previous_report_summary = summarize_pdf_text(pdf_text)
+                previous_report_summary = cached_summarize_pdf_text(pdf_text)
             st.info("Previous report summarized. This summary will be used for context.")
-            
+
     # Generate the journal report
     if st.button("Generate Journal Report"):
         if not actions:
             st.error("Please describe what you have done so far.")
         else:
-            with st.spinner("Generating your new journal report..."):
+            with st.spinner("Generating your journal report..."):
                 report = generate_journal_report(
                     previous_report_summary=previous_report_summary,
                     project=project,
