@@ -30,7 +30,8 @@ st.sidebar.markdown(f"google.generativeai: {genai.__version__}")
 st.sidebar.markdown(f"streamlit: {st.__version__}")
 
 ###############################################################################
-# API Key Input Form
+# Step 1: API Key input
+
 if "api_key_entered" not in st.session_state:
     with st.form("api_key_form"):
         st.header("Enter Your GOOGLE_API_KEY")
@@ -43,7 +44,8 @@ if "api_key_entered" not in st.session_state:
                 genai.configure(api_key=user_api_key)
                 st.session_state.api_key_entered = True
                 st.success("API Key configured successfully!")
-                st.experimental_rerun()
+                # Instead of st.experimental_rerun(), use st.stop()
+                st.stop()
             else:
                 st.error("API Key is required to proceed.")
     st.stop()
@@ -135,8 +137,7 @@ def generate_journal_report(
     })
 
 ###############################################################################
-# Main application logic
-
+# Step 2: Main application logic
 def main():
     st.write("Provide the details for your field visit. You may upload the previous report for a better context.")
 
@@ -161,7 +162,7 @@ def main():
     actions = st.text_area("Describe what was done in this visit:")
     st.caption("Please be as detailed as possible for better context building, bullet points preferred. Make sure to describe what was captured in the images and videos taken during the latest visit.")
 
-    # Optional: Upload previous report PDF at the end
+    # Optional: Upload previous report PDF
     st.subheader("Upload Previous Report (PDF)")
     previous_pdf = st.file_uploader("Upload your previous report.", type=["pdf"])
     previous_report_summary = ""
@@ -223,7 +224,12 @@ def main():
                         st.error(f"Failed again: {e2}")
 
 if __name__ == "__main__":
-    main()
+    # Only run the main logic if the user has entered an API key
+    if st.session_state.get("api_key_entered"):
+        main()
+    else:
+        # The user hasn't provided the API key yet
+        st.stop()
 
 ###############################################################################
 # Footer for Credits (displayed at the end)
