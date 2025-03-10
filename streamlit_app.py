@@ -27,30 +27,35 @@ st.sidebar.markdown(f"google.generativeai: {genai.__version__}")
 st.sidebar.markdown(f"streamlit: {st.__version__}")
 
 ###############################################################################
-# Step 1: Ask the user for their Google API Key
+# 1) Prompt for user to enter their Google API Key in a form.
+
 if "api_key_entered" not in st.session_state:
-    st.title("Karma Yoga Journal Report Generator")
+    st.session_state["api_key_entered"] = False
+
+if not st.session_state["api_key_entered"]:
     with st.form("api_key_form"):
-        st.header("Enter Your GOOGLE_API_KEY")
+        st.title("Karma Yoga Journal Report Generator")
         st.info(
-            "You need a Google API Key to use Google's Generative AI.\n\n"
-            "If you don't have one, you can create it here:\n"
+            "To use this app, you need a Google API Key for Generative AI.\n\n"
+            "If you don't have one, please create it here:\n"
             "[Create a Google API Key](https://console.cloud.google.com/apis/credentials)"
         )
         user_api_key = st.text_input("Enter your Google API Key", type="password")
         submitted = st.form_submit_button("Next")
         if submitted:
             if user_api_key.strip():
+                # Configure the API key
                 genai.configure(api_key=user_api_key.strip())
-                st.session_state.api_key_entered = True
-                st.success("API Key configured successfully! Please proceed below.")
-                st.stop()
+                st.session_state["api_key_entered"] = True
+                st.success("API Key configured successfully!")
+                # Re-run to display the main interface
+                st.experimental_rerun()
             else:
                 st.error("API Key is required to proceed.")
-    st.stop()
+    st.stop()  # Stop here if user hasn't provided a valid key
 
 ###############################################################################
-# Prompt template for the journal report
+# 2) Now that the user has provided an API key, define the rest of the app logic.
 
 journal_prompt = """
 You are a social welfare expert. Based on the following details from today's field visit, please draft 
@@ -81,14 +86,12 @@ prompt_template = PromptTemplate(
 journal_chain = LLMChain(
     prompt=prompt_template,
     llm=ChatGoogleGenerativeAI(
-        model="gemini-1.5-pro-latest",  # Adjust model name/version if needed
+        model="gemini-1.5-pro-latest",  # Adjust if needed
         temperature=0.7,
         max_tokens=5000
     )
 )
 
-###############################################################################
-# Cached summarization to avoid repeated runs if the same text is provided
 @st.cache_data(show_spinner=False)
 def cached_summarize_pdf_text(pdf_text: str) -> str:
     """
@@ -110,7 +113,9 @@ def cached_summarize_pdf_text(pdf_text: str) -> str:
     return summary.strip()
 
 def extract_text_from_pdf(pdf_file) -> str:
-    """Extract text from an uploaded PDF file using pdfminer.six."""
+    """
+    Extract text from an uploaded PDF file using pdfminer.six.
+    """
     pdf_bytes = pdf_file.read()
     return extract_text(io.BytesIO(pdf_bytes))
 
@@ -121,7 +126,9 @@ def generate_journal_report(
     visit_number: str,
     actions: str
 ) -> str:
-    """Generate the final journal report, incorporating the previous report summary."""
+    """
+    Generate the final journal report, incorporating the previous report summary.
+    """
     date_str = visit_date.strftime("%Y-%m-%d") if visit_date else "No date provided"
     return journal_chain.run({
         "previous_report_summary": previous_report_summary,
@@ -132,13 +139,13 @@ def generate_journal_report(
     })
 
 ###############################################################################
-# Main app logic
+# 3) Main interface for the app, displayed after user enters an API key.
 
 def main():
     st.title("Karma Yoga Journal Report Generator")
     st.write("Provide the details for your field visit. You may optionally upload a PDF of a previous report (for context).")
 
-    # 1. General Information Section
+    # General Information
     st.subheader("General Information")
     project = st.selectbox("Select your Karma Yoga Project", [
         "Tree Plantation Drive",
@@ -157,11 +164,11 @@ def main():
     visit_date = st.date_input("Enter the date of the field visit")
     actions = st.text_area("Describe what you have done so far:")
 
-    # 2. Optional: Upload previous report PDF
+    # Optional: Upload previous PDF
     st.subheader("Previous Report (PDF) - Optional")
-    previous_pdf = st.file_uploader("Upload your previous report (PDF only)", type=["pdf"])
+    previous_pdf = st.file_uploader("Upload a PDF of your previous report", type=["pdf"])
     previous_report_summary = ""
-    if previous_pdf is not None:
+    if previous_pdf:
         with st.spinner("Extracting text from the PDF..."):
             pdf_text = extract_text_from_pdf(previous_pdf)
         if pdf_text:
@@ -170,7 +177,7 @@ def main():
                 previous_report_summary = cached_summarize_pdf_text(pdf_text)
             st.info("Previous report summarized. This summary will be used for context building.")
 
-    # 3. Generate the journal report
+    # Generate the journal report
     if st.button("Generate Journal Report"):
         if not actions:
             st.error("Please describe what you have done so far.")
@@ -193,10 +200,11 @@ def main():
             )
 
 if __name__ == "__main__":
-    # If the user provided an API key, proceed with main; otherwise we won't proceed
+    # If user has entered their API key, show the main interface
     if st.session_state.get("api_key_entered"):
         main()
     else:
+        # The user hasn't provided a key yet, so do nothing else
         st.stop()
 
 # Footer for Credits
@@ -207,6 +215,6 @@ st.markdown(
         Made with ❤️ by Anubhav Verma<br>
         Please reach out to anubhav.verma360@gmail.com if you encounter any issues.
     </div>
-    """,
+    """, 
     unsafe_allow_html=True
 )
