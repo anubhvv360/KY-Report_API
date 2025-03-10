@@ -4,7 +4,6 @@
 import streamlit as st
 import os
 import io
-import time
 
 # Google Generative AI & LangChain imports
 import google.generativeai as genai
@@ -30,11 +29,12 @@ def extract_text_from_pdf(pdf_file) -> str:
     return extract_text(io.BytesIO(pdf_bytes))
 
 def summarize_pdf_text(pdf_text: str) -> str:
-    text_splitter = CharacterTextSplitter(chunk_size=4000, chunk_overlap=300)
+    """
+    Summarize the extracted PDF text using a summarization chain with the summarizer LLM.
+    This keeps the final prompt concise.
+    """
+    text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = text_splitter.split_text(pdf_text)
-    st.write(f"Number of chunks: {len(chunks)}")
-    for i, chunk in enumerate(chunks):
-        st.write(f"Chunk {i+1} length: {len(chunk)}")
     docs = [Document(page_content=chunk) for chunk in chunks]
     summarize_chain = load_summarize_chain(summarizer_llm, chain_type="map_reduce")
     summary = summarize_chain.run(docs)
@@ -71,6 +71,7 @@ prompt_template = PromptTemplate(
 ###############################################################################
 # Load LLM models (using caching)
 
+@st.cache_resource
 def load_main_llm():
     """Load the main ChatGoogleGenerativeAI model for generating the journal report."""
     return ChatGoogleGenerativeAI(
@@ -79,13 +80,13 @@ def load_main_llm():
         max_tokens=8000
     )
 
+@st.cache_resource
 def load_summarizer_llm():
     """Load a ChatGoogleGenerativeAI model for summarizing previous PDF reports."""
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-flash",
-        temperature=0.3,
-        max_tokens=2000,  # Reduced to avoid excess token consumption
-        top_p=0.9
+        temperature=0.7,
+        max_tokens=8000
     )
 
 main_llm = load_main_llm()
@@ -158,38 +159,24 @@ if st.session_state.step == 2:
             st.stop()
 
 # STEP 3: Previous Visit Information
-#import time # Add this at the top along with your other imports
-# STEP 3: Previous Visit Information
 if st.session_state.step == 3:
     with st.form("previous_visit_form"):
         st.header("Step 3: Previous Visit Information")
         st.info("Upload a PDF report of your previous visit(s) to provide context. (PDF only)")
         previous_pdf = st.file_uploader("Upload Previous Visit Report (PDF)", type=["pdf"])
-        st.caption("If the extraction takes more than 1 minute, please paste the text manually below.")
-        manual_text = st.text_area("Or paste the PDF text manually (optional)", height=200)
         submitted = st.form_submit_button("Next")
         st.caption("Note: Please press 'Next' again once the spinner disappears.")
         if submitted:
-            summary = ""
-            # If the user pasted text manually, use that.
-            if manual_text.strip():
-                with st.spinner("Summarizing manually entered text..."):
-                    summary = summarize_pdf_text(manual_text)
-            # Else if a PDF was uploaded, attempt extraction.
-            elif previous_pdf is not None:
+            if previous_pdf is not None:
                 with st.spinner("Extracting and summarizing previous report..."):
-                    start_time = time.time()
                     pdf_text = extract_text_from_pdf(previous_pdf)
-                    duration = time.time() - start_time
-                    if duration > 60:
-                        st.warning("PDF extraction took more than 1 minute. Consider using the manual text option.")
                     if pdf_text:
                         summary = summarize_pdf_text(pdf_text)
+                        st.session_state.previous_report_summary = summary
                     else:
-                        summary = ""
+                        st.session_state.previous_report_summary = ""
             else:
-                summary = ""
-            st.session_state.previous_report_summary = summary
+                st.session_state.previous_report_summary = ""
             st.session_state.step = 4
             st.stop()
 
