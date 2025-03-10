@@ -39,7 +39,7 @@ genai.configure(api_key=api_key)
 
 journal_prompt = """
 You are a social welfare student with a low budget. Based on the following details from today's field visit, draft
-a comprehensive journal report of approximately 500 words that reflects on the social welfare impact
+a comprehensive journal report of approximately 400 - 500 words that reflects on the social welfare impact
 and field activities, building on to what was done in previous report summary. The report must be specific and persuasive to a seasoned evaluator. Don't mention any date in the report. 
 Make the output in plural first person (using We/Us). Follow the structure below:
 
