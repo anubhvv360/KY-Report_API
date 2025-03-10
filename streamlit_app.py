@@ -18,10 +18,7 @@ from langchain.text_splitter import CharacterTextSplitter
 # PDF extraction
 from pdfminer.high_level import extract_text
 
-# Import the ResourceExhausted exception
-from google.api_core.exceptions import ResourceExhausted
-
-# Set page config first
+# Set page config
 st.set_page_config(page_title="Karma Yoga Journal Agent", page_icon="📝", layout="wide")
 
 # Sidebar: library versions (optional)
@@ -30,32 +27,34 @@ st.sidebar.markdown(f"google.generativeai: {genai.__version__}")
 st.sidebar.markdown(f"streamlit: {st.__version__}")
 
 ###############################################################################
-# Step 1: API Key input
-
+# Step 1: Ask the user for their Google API Key
 if "api_key_entered" not in st.session_state:
+    st.title("Karma Yoga Journal Report Generator")
     with st.form("api_key_form"):
         st.header("Enter Your GOOGLE_API_KEY")
-        st.info("Please enter your GOOGLE_API_KEY to use this app.")
-        user_api_key = st.text_input("Enter your GOOGLE_API_KEY", type="password")
+        st.info(
+            "You need a Google API Key to use Google's Generative AI.\n\n"
+            "If you don't have one, you can create it here:\n"
+            "[Create a Google API Key](https://console.cloud.google.com/apis/credentials)"
+        )
+        user_api_key = st.text_input("Enter your Google API Key", type="password")
         submitted = st.form_submit_button("Next")
         if submitted:
-            if user_api_key:
-                st.session_state.api_key = user_api_key
-                genai.configure(api_key=user_api_key)
+            if user_api_key.strip():
+                genai.configure(api_key=user_api_key.strip())
                 st.session_state.api_key_entered = True
-                st.success("API Key configured successfully!")
-                # Instead of st.experimental_rerun(), use st.stop()
+                st.success("API Key configured successfully! Please proceed below.")
                 st.stop()
             else:
                 st.error("API Key is required to proceed.")
     st.stop()
 
 ###############################################################################
-# Prompt template for a Social Impact based journal report
+# Prompt template for the journal report
 
 journal_prompt = """
-You are a social welfare student on a low budget. Based on the following details from today's field visit, draft
-a comprehensive journal report of approximately 400-500 words reflecting social impact
+You are a social welfare expert. Based on the following details from today's field visit, please draft 
+a comprehensive journal report of approximately 500 words that reflects on the social welfare impact 
 and field activities. Don't mention the visiting date in the paragraphs. Follow the structure below:
 
 1. Please describe the plan of action for today’s field visit. (Include objectives, goals, and the purpose of your visit.)
@@ -80,7 +79,7 @@ prompt_template = PromptTemplate(
 )
 
 journal_chain = LLMChain(
-    prompt=prompt_template, 
+    prompt=prompt_template,
     llm=ChatGoogleGenerativeAI(
         model="gemini-1.5-pro-latest",  # Adjust model name/version if needed
         temperature=0.7,
@@ -89,7 +88,7 @@ journal_chain = LLMChain(
 )
 
 ###############################################################################
-# Cached summarization chain to handle previous PDF
+# Cached summarization to avoid repeated runs if the same text is provided
 @st.cache_data(show_spinner=False)
 def cached_summarize_pdf_text(pdf_text: str) -> str:
     """
@@ -104,16 +103,14 @@ def cached_summarize_pdf_text(pdf_text: str) -> str:
             model="gemini-1.5-flash-8b",
             temperature=0.3,
             max_tokens=4000
-        ), 
+        ),
         chain_type="map_reduce"
     )
     summary = summarize_chain.run(docs)
     return summary.strip()
 
 def extract_text_from_pdf(pdf_file) -> str:
-    """
-    Extracts text from an uploaded PDF file using pdfminer.six.
-    """
+    """Extract text from an uploaded PDF file using pdfminer.six."""
     pdf_bytes = pdf_file.read()
     return extract_text(io.BytesIO(pdf_bytes))
 
@@ -124,9 +121,7 @@ def generate_journal_report(
     visit_number: str,
     actions: str
 ) -> str:
-    """
-    Generate the final journal report, incorporating the previous report summary.
-    """
+    """Generate the final journal report, incorporating the previous report summary."""
     date_str = visit_date.strftime("%Y-%m-%d") if visit_date else "No date provided"
     return journal_chain.run({
         "previous_report_summary": previous_report_summary,
@@ -137,11 +132,13 @@ def generate_journal_report(
     })
 
 ###############################################################################
-# Step 2: Main application logic
-def main():
-    st.write("Provide the details for your field visit. You may upload the previous report for a better context.")
+# Main app logic
 
-    # General Information Section
+def main():
+    st.title("Karma Yoga Journal Report Generator")
+    st.write("Provide the details for your field visit. You may optionally upload a PDF of a previous report (for context).")
+
+    # 1. General Information Section
     st.subheader("General Information")
     project = st.selectbox("Select your Karma Yoga Project", [
         "Tree Plantation Drive",
@@ -157,14 +154,12 @@ def main():
     visit_number = st.selectbox("Which visit is it?", [
         "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"
     ])
-    st.caption("Please draft the 1st report on your own lmao.")
     visit_date = st.date_input("Enter the date of the field visit")
-    actions = st.text_area("Describe what was done in this visit:")
-    st.caption("Please be as detailed as possible for better context building, bullet points preferred. Make sure to describe what was captured in the images and videos taken during the latest visit.")
+    actions = st.text_area("Describe what you have done so far:")
 
-    # Optional: Upload previous report PDF
-    st.subheader("Upload Previous Report (PDF)")
-    previous_pdf = st.file_uploader("Upload your previous report.", type=["pdf"])
+    # 2. Optional: Upload previous report PDF
+    st.subheader("Previous Report (PDF) - Optional")
+    previous_pdf = st.file_uploader("Upload your previous report (PDF only)", type=["pdf"])
     previous_report_summary = ""
     if previous_pdf is not None:
         with st.spinner("Extracting text from the PDF..."):
@@ -173,74 +168,45 @@ def main():
             st.success(f"Successfully extracted {len(pdf_text)} characters from the previous report.")
             with st.spinner("Summarizing previous report..."):
                 previous_report_summary = cached_summarize_pdf_text(pdf_text)
-            st.info("Previous report summarized. This will be used for context building.")
+            st.info("Previous report summarized. This summary will be used for context building.")
 
-    # Generate the journal report with error handling for ResourceExhausted
-    if st.button("Generate Report"):
+    # 3. Generate the journal report
+    if st.button("Generate Journal Report"):
         if not actions:
-            st.error("Please describe what was done in this visit:")
+            st.error("Please describe what you have done so far.")
         else:
-            try:
-                with st.spinner("Generating report..."):
-                    report = generate_journal_report(
-                        previous_report_summary=previous_report_summary,
-                        project=project,
-                        visit_date=visit_date,
-                        visit_number=visit_number,
-                        actions=actions
-                    )
-                st.subheader("Journal Report")
-                st.write(report)
-                st.download_button(
-                    label="Download Report as Text",
-                    data=report,
-                    file_name="journal_report.txt",
-                    mime="text/plain"
+            with st.spinner("Generating your new journal report..."):
+                report = generate_journal_report(
+                    previous_report_summary=previous_report_summary,
+                    project=project,
+                    visit_date=visit_date,
+                    visit_number=visit_number,
+                    actions=actions
                 )
-            except ResourceExhausted as e:
-                st.error("Default API key tokens are exhausted. Please provide your own GOOGLE_API_KEY below and click Retry.")
-                new_api_key = st.text_input("Enter your own GOOGLE_API_KEY", type="password")
-                if new_api_key:
-                    genai.configure(api_key=new_api_key)
-                    try:
-                        with st.spinner("Retrying generation with your provided API key..."):
-                            report = generate_journal_report(
-                                previous_report_summary=previous_report_summary,
-                                project=project,
-                                visit_date=visit_date,
-                                visit_number=visit_number,
-                                actions=actions
-                            )
-                        st.success("Report generated successfully!")
-                        st.subheader("Draft Journal Report")
-                        st.write(report)
-                        st.download_button(
-                            label="Download Report as Text",
-                            data=report,
-                            file_name="journal_report.txt",
-                            mime="text/plain"
-                        )
-                    except Exception as e2:
-                        st.error(f"Failed again: {e2}")
+            st.subheader("Draft Journal Report")
+            st.write(report)
+            st.download_button(
+                label="Download Report as Text",
+                data=report,
+                file_name="journal_report.txt",
+                mime="text/plain"
+            )
 
 if __name__ == "__main__":
-    # Only run the main logic if the user has entered an API key
+    # If the user provided an API key, proceed with main; otherwise we won't proceed
     if st.session_state.get("api_key_entered"):
         main()
     else:
-        # The user hasn't provided the API key yet
         st.stop()
 
-###############################################################################
-# Footer for Credits (displayed at the end)
-st.markdown("""---""")
+# Footer for Credits
+st.markdown("---")
 st.markdown(
     """
     <div style="background: linear-gradient(to right, blue, purple); padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; color: white;">
         Made with ❤️ by Anubhav Verma<br>
         Please reach out to anubhav.verma360@gmail.com if you encounter any issues.
     </div>
-    """, 
+    """,
     unsafe_allow_html=True
 )
-st.caption("Disclaimer: This tool just provides assistance. Please review the report carefully before submitting. The creator is not responsible for any errors or consequences resulting from its use.")
