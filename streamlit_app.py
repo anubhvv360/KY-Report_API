@@ -228,3 +228,22 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("Disclaimer: This tool just provides assistance. Please review the report carefully before submitting. The creator is not responsible for any errors or consequences resulting from its use.")
+
+# Google AdSense Code
+adsense_code = """
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8328428651128308"
+     crossorigin="anonymous"></script>
+<!-- AdUnitName1 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-8328428651128308"
+     data-ad-slot="4961608676"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+"""
+
+# Embed Google AdSense in Streamlit
+st.components.v1.html(adsense_code, height=100, scrolling=False)
