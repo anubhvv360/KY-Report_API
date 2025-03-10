@@ -18,6 +18,9 @@ from langchain.text_splitter import CharacterTextSplitter
 # PDF extraction
 from pdfminer.high_level import extract_text
 
+# Import the ResourceExhausted exception
+from google.api_core.exceptions import ResourceExhausted
+
 # Set page config first
 st.set_page_config(page_title="Karma Yoga Journal Agent", page_icon="📝", layout="wide")
 
@@ -39,7 +42,9 @@ genai.configure(api_key=api_key)
 # Prompt template for a Social Impact based journal report
 
 journal_prompt = """
-You are a social welfare expert. Based on the following details from today's field visit, please draft a comprehensive journal report of approximately 500 words that reflects on the social welfare impact and field activities. Don't mention the visiting date in the paragraphs. Follow the structure below:
+You are a social welfare expert. Based on the following details from today's field visit, please draft
+a comprehensive journal report of approximately 500 words that reflects on the social welfare impact
+and field activities. Don't mention the visiting date in the paragraphs. Follow the structure below:
 
 1. Please describe the plan of action for today’s field visit. (Include objectives, goals, and the purpose of your visit.)
 2. Please describe the activities carried out to complete the action plan. (Outline the work done during the field visit.)
@@ -62,24 +67,33 @@ prompt_template = PromptTemplate(
     template=journal_prompt
 )
 
-journal_chain = LLMChain(prompt=prompt_template, llm=ChatGoogleGenerativeAI(
-    model="gemini-1.5-pro-latest",  # Adjust model name/version if needed
-    temperature=0.7,
-    max_tokens=5000
-))
+journal_chain = LLMChain(
+    prompt=prompt_template, 
+    llm=ChatGoogleGenerativeAI(
+        model="gemini-1.5-pro-latest",  # Adjust model name/version if needed
+        temperature=0.7,
+        max_tokens=5000
+    )
+)
 
 ###############################################################################
-# Cached summarization to avoid repeated runs if the same text is provided
-@st.cache_data(show_spinner=False)
-def cached_summarize_pdf_text(pdf_text: str) -> str:
+# Summarization chain to handle previous PDF
+def summarize_pdf_text(pdf_text: str) -> str:
+    """
+    Summarize the extracted PDF text using a summarization chain with the summarizer LLM.
+    This helps keep the final prompt from exceeding token limits if the PDF is large.
+    """
     text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = text_splitter.split_text(pdf_text)
     docs = [Document(page_content=chunk) for chunk in chunks]
-    summarize_chain = load_summarize_chain(ChatGoogleGenerativeAI(
-        model="gemini-1.5-flash-8b",
-        temperature=0.3,
-        max_tokens=4000
-    ), chain_type="map_reduce")
+    summarize_chain = load_summarize_chain(
+        ChatGoogleGenerativeAI(
+            model="gemini-1.5-flash-8b",
+            temperature=0.3,
+            max_tokens=4000
+        ), 
+        chain_type="map_reduce"
+    )
     summary = summarize_chain.run(docs)
     return summary.strip()
 
@@ -145,30 +159,56 @@ def main():
         if pdf_text:
             st.success(f"Successfully extracted {len(pdf_text)} characters from the previous report.")
             with st.spinner("Summarizing previous report..."):
-                previous_report_summary = cached_summarize_pdf_text(pdf_text)
+                previous_report_summary = summarize_pdf_text(pdf_text)
             st.info("Previous report summarized. This summary will be used for context.")
 
-    # Generate the journal report
+    # Generate the journal report with error handling for ResourceExhausted
     if st.button("Generate Journal Report"):
         if not actions:
             st.error("Please describe what you have done so far.")
         else:
-            with st.spinner("Generating your journal report..."):
-                report = generate_journal_report(
-                    previous_report_summary=previous_report_summary,
-                    project=project,
-                    visit_date=visit_date,
-                    visit_number=visit_number,
-                    actions=actions
+            try:
+                with st.spinner("Generating your journal report..."):
+                    report = generate_journal_report(
+                        previous_report_summary=previous_report_summary,
+                        project=project,
+                        visit_date=visit_date,
+                        visit_number=visit_number,
+                        actions=actions
+                    )
+                st.subheader("Draft Journal Report")
+                st.write(report)
+                st.download_button(
+                    label="Download Report as Text",
+                    data=report,
+                    file_name="journal_report.txt",
+                    mime="text/plain"
                 )
-            st.subheader("Draft Journal Report")
-            st.write(report)
-            st.download_button(
-                label="Download Report as Text",
-                data=report,
-                file_name="journal_report.txt",
-                mime="text/plain"
-            )
+            except ResourceExhausted as e:
+                st.error("Default API key tokens are exhausted. Please provide your own GOOGLE_API_KEY below and click Retry.")
+                new_api_key = st.text_input("Enter your own GOOGLE_API_KEY", type="password")
+                if new_api_key:
+                    genai.configure(api_key=new_api_key)
+                    try:
+                        with st.spinner("Retrying generation with your provided API key..."):
+                            report = generate_journal_report(
+                                previous_report_summary=previous_report_summary,
+                                project=project,
+                                visit_date=visit_date,
+                                visit_number=visit_number,
+                                actions=actions
+                            )
+                        st.success("Report generated successfully!")
+                        st.subheader("Draft Journal Report")
+                        st.write(report)
+                        st.download_button(
+                            label="Download Report as Text",
+                            data=report,
+                            file_name="journal_report.txt",
+                            mime="text/plain"
+                        )
+                    except Exception as e2:
+                        st.error(f"Failed again: {e2}")
 
 if __name__ == "__main__":
     main()
