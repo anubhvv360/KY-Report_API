@@ -43,7 +43,7 @@ def load_main_llm():
     return ChatGoogleGenerativeAI(
         model="gemini-1.5-pro-latest",  # Adjust model name/version if needed
         temperature=0.7,
-        max_tokens=3000
+        max_tokens=5000
     )
 
 # Cache a second instance for summarization (can be the same or a smaller model)
@@ -54,9 +54,9 @@ def load_summarizer_llm():
     You could use the same model or a smaller one if you have access.
     """
     return ChatGoogleGenerativeAI(
-        model="gemini-1.5-pro-latest",
-        temperature=0.7,
-        max_tokens=2000
+        model="gemini-1.5-flash-8b",
+        temperature=0.3,
+        max_tokens=4000
     )
 
 main_llm = load_main_llm()
