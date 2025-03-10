@@ -225,3 +225,4 @@ st.markdown(
     """, 
     unsafe_allow_html=True
 )
+st.caption("Disclaimer: This tool provides assistance, but please review the report carefully before submitting. The creator is not responsible for any errors or consequences resulting from its use.")
