@@ -88,7 +88,6 @@ def summarize_pdf_text(pdf_text: str) -> str:
     summary = summarize_chain.run(docs)
     return summary.strip()
 
-@st.cache_resource
 def extract_text_from_pdf(pdf_file) -> str:
     """
     Extracts text from an uploaded PDF file using pdfminer.six.
