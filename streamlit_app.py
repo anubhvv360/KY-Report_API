@@ -71,7 +71,6 @@ prompt_template = PromptTemplate(
 ###############################################################################
 # Load LLM models (using caching)
 
-@st.cache_resource
 def load_main_llm():
     """Load the main ChatGoogleGenerativeAI model for generating the journal report."""
     return ChatGoogleGenerativeAI(
@@ -80,7 +79,6 @@ def load_main_llm():
         max_tokens=8000
     )
 
-@st.cache_resource
 def load_summarizer_llm():
     """Load a ChatGoogleGenerativeAI model for summarizing previous PDF reports."""
     return ChatGoogleGenerativeAI(
