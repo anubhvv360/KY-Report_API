@@ -228,5 +228,3 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("Disclaimer: This tool just provides assistance. Please review the report carefully before submitting. The creator is not responsible for any errors or consequences resulting from its use.")
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8328428651128308"
-     crossorigin="anonymous"></script>
