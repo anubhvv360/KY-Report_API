@@ -142,7 +142,7 @@ def main():
     visit_date = st.date_input("Enter the date of the field visit")
 
     # 4. Text area for user to describe what they have done so far
-    actions = st.text_area("Describe what you have done so far:")
+    actions = st.text_area("Describe what you have done in this visit:")
 
     # 1. (Optional) PDF of a previous report
     st.subheader("Previous Report (PDF)")
