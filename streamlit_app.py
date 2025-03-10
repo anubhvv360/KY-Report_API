@@ -29,14 +29,17 @@ st.sidebar.markdown("### Library Versions")
 st.sidebar.markdown(f"google.generativeai: {genai.__version__}")
 st.sidebar.markdown(f"streamlit: {st.__version__}")
 
-# Check for API key in Streamlit secrets
-if "GOOGLE_API_KEY" not in st.secrets:
-    st.error("API key not found in secrets. Please add GOOGLE_API_KEY to your Streamlit secrets.")
+###############################################################################
+# User-provided API Key at the beginning
+st.title("Karma Yoga Journal Report Generator")
+st.write("Please enter your GOOGLE_API_KEY to use the app.")
+user_api_key = st.text_input("Enter your GOOGLE_API_KEY", type="password")
+if not user_api_key:
+    st.error("API Key is required to proceed.")
     st.stop()
-
-# Configure Google Generative AI with your API key
-api_key = st.secrets["GOOGLE_API_KEY"]
-genai.configure(api_key=api_key)
+else:
+    genai.configure(api_key=user_api_key)
+    st.success("API Key configured successfully!")
 
 ###############################################################################
 # Prompt template for a Social Impact based journal report
@@ -128,7 +131,6 @@ def generate_journal_report(
 # Main application logic
 
 def main():
-    st.title("Karma Yoga Journal Report Generator")
     st.write("Provide the details for your field visit. You may upload the previous report for a better context.")
 
     # General Information Section
@@ -228,22 +230,3 @@ st.markdown(
     unsafe_allow_html=True
 )
 st.caption("Disclaimer: This tool just provides assistance. Please review the report carefully before submitting. The creator is not responsible for any errors or consequences resulting from its use.")
-
-# Google AdSense Code
-adsense_code = """
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8328428651128308"
-     crossorigin="anonymous"></script>
-<!-- AdUnitName1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-8328428651128308"
-     data-ad-slot="4961608676"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-"""
-
-# Embed Google AdSense in Streamlit
-st.components.v1.html(adsense_code, height=100, scrolling=False)
