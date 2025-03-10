@@ -147,7 +147,7 @@ def main():
     visit_number = st.selectbox("Which visit is it?", [
         "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"
     ])
-    st.caption("Please please the 1st report on your own lmao.")
+    st.caption("Please draft the 1st report on your own lmao.")
     visit_date = st.date_input("Enter the date of the field visit")
     actions = st.text_area("Describe what was done in this visit:")
     st.caption("Please be as detailed as possible for better context building, bullet points preferred. Make sure to describe what was captured in the images and videos taken during the latest visit.")
