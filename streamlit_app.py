@@ -121,19 +121,6 @@ def main():
     st.title("Karma Yoga Journal Report Generator")
     st.write("Upload a PDF of a previous report (optional) and provide inputs for your latest vist.")
 
-    # 1. (Optional) PDF of a previous report
-    st.subheader("Previous Report (PDF)")
-    previous_pdf = st.file_uploader("Upload a PDF of your previous report (optional)", type=["pdf"])
-    previous_report_summary = ""
-    if previous_pdf is not None:
-        with st.spinner("Extracting text from the PDF..."):
-            pdf_text = extract_text_from_pdf(previous_pdf)
-        if pdf_text:
-            st.success(f"Successfully extracted {len(pdf_text)} characters from previous report.")
-            with st.spinner("Summarizing previous report..."):
-                previous_report_summary = summarize_pdf_text(pdf_text)
-            st.info("Previous report summarized. This summary will be used for context.")
-
     # 2. General Information: Select Karma Yoga Project and which visit it is (ignore 1st)
     st.subheader("General Information")
     project = st.selectbox("Select your Karma Yoga Project", [
@@ -157,6 +144,19 @@ def main():
     # 4. Text area for user to describe what they have done so far
     actions = st.text_area("Describe what you have done so far:")
 
+    # 1. (Optional) PDF of a previous report
+    st.subheader("Previous Report (PDF)")
+    previous_pdf = st.file_uploader("Upload a PDF of your previous report (optional)", type=["pdf"])
+    previous_report_summary = ""
+    if previous_pdf is not None:
+        with st.spinner("Extracting text from the PDF..."):
+            pdf_text = extract_text_from_pdf(previous_pdf)
+        if pdf_text:
+            st.success(f"Successfully extracted {len(pdf_text)} characters from previous report.")
+            with st.spinner("Summarizing previous report..."):
+                previous_report_summary = summarize_pdf_text(pdf_text)
+            st.info("Previous report summarized. This summary will be used for context.")
+            
     # Generate the journal report
     if st.button("Generate Journal Report"):
         if not actions:
