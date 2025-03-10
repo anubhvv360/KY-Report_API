@@ -30,16 +30,23 @@ st.sidebar.markdown(f"google.generativeai: {genai.__version__}")
 st.sidebar.markdown(f"streamlit: {st.__version__}")
 
 ###############################################################################
-# User-provided API Key at the beginning
-st.title("Karma Yoga Journal Report Generator")
-st.write("Please enter your GOOGLE_API_KEY to use the app.")
-user_api_key = st.text_input("Enter your GOOGLE_API_KEY", type="password")
-if not user_api_key:
-    st.error("API Key is required to proceed.")
+# API Key Input Form
+if "api_key_entered" not in st.session_state:
+    with st.form("api_key_form"):
+        st.header("Enter Your GOOGLE_API_KEY")
+        st.info("Please enter your GOOGLE_API_KEY to use this app.")
+        user_api_key = st.text_input("Enter your GOOGLE_API_KEY", type="password")
+        submitted = st.form_submit_button("Next")
+        if submitted:
+            if user_api_key:
+                st.session_state.api_key = user_api_key
+                genai.configure(api_key=user_api_key)
+                st.session_state.api_key_entered = True
+                st.success("API Key configured successfully!")
+                st.experimental_rerun()
+            else:
+                st.error("API Key is required to proceed.")
     st.stop()
-else:
-    genai.configure(api_key=user_api_key)
-    st.success("API Key configured successfully!")
 
 ###############################################################################
 # Prompt template for a Social Impact based journal report
@@ -218,6 +225,7 @@ def main():
 if __name__ == "__main__":
     main()
 
+###############################################################################
 # Footer for Credits (displayed at the end)
 st.markdown("""---""")
 st.markdown(
