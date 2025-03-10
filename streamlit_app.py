@@ -150,7 +150,7 @@ def main():
     st.caption("Please please the 1st report on your own lmao.")
     visit_date = st.date_input("Enter the date of the field visit")
     actions = st.text_area("Describe what was done in this visit:")
-    st.caption("Please be as detailed as possible for better context building, bullet points preferred.")
+    st.caption("Please be as detailed as possible for better context building, bullet points preferred. Make sure to describe what was captured in the images and videos taken during the latest visit.")
 
     # Optional: Upload previous report PDF at the end
     st.subheader("Upload Previous Report (PDF)")
