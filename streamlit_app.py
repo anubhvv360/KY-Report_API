@@ -77,11 +77,12 @@ journal_chain = LLMChain(
 )
 
 ###############################################################################
-# Summarization chain to handle previous PDF
-def summarize_pdf_text(pdf_text: str) -> str:
+# Cached summarization chain to handle previous PDF
+@st.cache_data(show_spinner=False)
+def cached_summarize_pdf_text(pdf_text: str) -> str:
     """
     Summarize the extracted PDF text using a summarization chain with the summarizer LLM.
-    This helps keep the final prompt from exceeding token limits if the PDF is large.
+    The result is cached to avoid re-running the summarization unnecessarily.
     """
     text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
     chunks = text_splitter.split_text(pdf_text)
@@ -161,7 +162,7 @@ def main():
         if pdf_text:
             st.success(f"Successfully extracted {len(pdf_text)} characters from the previous report.")
             with st.spinner("Summarizing previous report..."):
-                previous_report_summary = summarize_pdf_text(pdf_text)
+                previous_report_summary = cached_summarize_pdf_text(pdf_text)
             st.info("Previous report summarized. This will be used for context building.")
 
     # Generate the journal report with error handling for ResourceExhausted
