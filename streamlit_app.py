@@ -42,8 +42,8 @@ genai.configure(api_key=api_key)
 # Prompt template for a Social Impact based journal report
 
 journal_prompt = """
-You are a social welfare expert. Based on the following details from today's field visit, please draft
-a comprehensive journal report of approximately 500 words that reflects on the social welfare impact
+You are a social welfare student on a low budget. Based on the following details from today's field visit, draft
+a comprehensive journal report of approximately 400-500 words reflecting social impact
 and field activities. Don't mention the visiting date in the paragraphs. Follow the structure below:
 
 1. Please describe the plan of action for today’s field visit. (Include objectives, goals, and the purpose of your visit.)
@@ -128,7 +128,7 @@ def generate_journal_report(
 
 def main():
     st.title("Karma Yoga Journal Report Generator")
-    st.write("Provide the details for your field visit. You may optionally upload a PDF of a previous report (for context) at the end.")
+    st.write("Provide the details for your field visit. You may upload the previous report for a better context.")
 
     # General Information Section
     st.subheader("General Information")
@@ -147,11 +147,11 @@ def main():
         "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"
     ])
     visit_date = st.date_input("Enter the date of the field visit")
-    actions = st.text_area("Describe what you have done so far:")
+    actions = st.text_area("Describe what was done in this visit:")
 
     # Optional: Upload previous report PDF at the end
-    st.subheader("Optional: Previous Report (PDF)")
-    previous_pdf = st.file_uploader("Upload a PDF of your previous report (optional)", type=["pdf"])
+    st.subheader("Upload Previous Report (PDF)")
+    previous_pdf = st.file_uploader("Upload your previous report.", type=["pdf"])
     previous_report_summary = ""
     if previous_pdf is not None:
         with st.spinner("Extracting text from the PDF..."):
@@ -160,15 +160,15 @@ def main():
             st.success(f"Successfully extracted {len(pdf_text)} characters from the previous report.")
             with st.spinner("Summarizing previous report..."):
                 previous_report_summary = summarize_pdf_text(pdf_text)
-            st.info("Previous report summarized. This summary will be used for context.")
+            st.info("Previous report summarized. This will be used for context building.")
 
     # Generate the journal report with error handling for ResourceExhausted
-    if st.button("Generate Journal Report"):
+    if st.button("Generate Report"):
         if not actions:
-            st.error("Please describe what you have done so far.")
+            st.error("Please describe what was done in this visit:")
         else:
             try:
-                with st.spinner("Generating your journal report..."):
+                with st.spinner("Generating report..."):
                     report = generate_journal_report(
                         previous_report_summary=previous_report_summary,
                         project=project,
@@ -176,7 +176,7 @@ def main():
                         visit_number=visit_number,
                         actions=actions
                     )
-                st.subheader("Draft Journal Report")
+                st.subheader("Journal Report")
                 st.write(report)
                 st.download_button(
                     label="Download Report as Text",
